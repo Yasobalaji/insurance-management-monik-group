@@ -1,0 +1,131 @@
+
+export type Language = 'en' | 'si' | 'ta';
+
+export const translations = {
+  en: {
+    // Auth
+    signInTitle: "CMBSL Insurance",
+    signInSubtitle: "Sign in to manage claims",
+    signInGoogle: "Sign in with Google",
+    email: "Email Address",
+    password: "Password",
+    login: "Login",
+    createAdmin: "Create Admin Account",
+    adminName: "Admin Name",
+    adminEmail: "Admin Email",
+    adminPassword: "Admin Password",
+    confirmPassword: "Confirm Password",
+    createAccount: "Create Account",
+    backToLogin: "Back to Login",
+    loginError: "Invalid email or password",
+    remember: "Remember Me",
+
+    // General UI & Labels
+    part1: "Part 01: Customer Details",
+    part2: "Part 02: Claim Selection",
+    company: "Company",
+    selectCompany: "Select Company",
+    branch: "Branch",
+    selectBranch: "Select Branch",
+    loanNumber: "Loan Number",
+    customerName: "Customer Name",
+    idType: "ID Type",
+    idNumber: "ID Number",
+    passportExpiry: "Passport Expiry Date",
+    centerName: "Center Name",
+    centerDate: "Center Date",
+    selectDay: "Select Day",
+    loanAmount: "Loan Amount",
+    collectionMethod: "Collection Method",
+    disbursedDate: "Loan Disbursed Date",
+    totalPaid: "Total Paid",
+    arrears: "Arrears",
+    claimType: "Claim Type",
+    beneficiary: "Beneficiary",
+    reset: "Reset Form",
+    submitRequest: "Submit Claim",
+    processing: "Processing Request...",
+    success: "Success",
+    
+    // Sidebar & Navigation
+    portalSubtitle: "Insurance Portal",
+    newClaim: "New Claim",
+    checkClaims: "Check Claims",
+    paymentRequest: "Payment Processing",
+    auditVerification: "Audit Logs",
+    packTracking: "Pack Tracking",
+    settings: "System Settings",
+    enquiry: "Enquiry Console",
+    
+    // List & Review
+    noClaims: "No claims found matching criteria",
+    refId: "Reference ID",
+    date: "Date",
+    customer: "Customer",
+    typeBeneficiary: "Type / Beneficiary",
+    status: "Status",
+    action: "Action",
+    review: "Review",
+    
+    // Pack Tracking
+    approvedPackTracking: "Approved Pack Logistics",
+    noApprovedPacks: "No approved packs available",
+    approvePackHint: "Approved claims with packs will appear here.",
+    packType: "Pack Type",
+    requestDate: "Request Date",
+    deliveredDate: "Delivered Date",
+    delivered: "Delivered",
+    pending: "Pending",
+    
+    // Audit & Payment
+    auditTitle: "Audit & Verification",
+    totalAmount: "Total Approved",
+    auditTotalPaid: "Total Disbursed",
+    outstanding: "Outstanding Balance",
+    paymentStatus: "Payment Status",
+    paid: "Paid",
+    pendingPayment: "Awaiting Payment",
+    confirmPayment: "Verify Disbursement",
+    bankDetails: "Bank Details",
+    approvedAmount: "Approved Amount",
+    itemsSelected: "Claims Selected",
+    totalSelected: "Total Value",
+    batchProcess: "Process Payment Batch",
+    paymentTitle: "Claims Payment Processing",
+    
+    // Settings
+    language: "Language Settings",
+    userManagement: "Staff User Control",
+    name: "Full Name",
+    role: "Access Role",
+    noUsers: "No user accounts found",
+    dataManagement: "Database Operations",
+    exportData: "Export Database (JSON)",
+    importData: "Import Database (JSON)",
+    importSuccess: "Database imported successfully",
+    importError: "Failed to import database",
+    systemInfo: "System Information",
+    appVersion: "Software Version",
+    apiStatus: "API Connection",
+    connected: "Cloud Connected",
+    simulated: "Local Simulation"
+  },
+  si: {
+    signInTitle: "CMBSL රක්ෂණය",
+    portalSubtitle: "හිමිකම් කළමනාකරණය",
+    newClaim: "නව හිමිකම් පෑමක්",
+    part1: "පාරිභෝගික විස්තර",
+    part2: "හිමිකම් තෝරා ගැනීම",
+    success: "සාර්ථකයි",
+    enquiry: "විමසීම්"
+  },
+  ta: {
+    signInTitle: "CMBSL காப்பீடு",
+    portalSubtitle: "உரிமைகோரல் மேலாண்மை",
+    newClaim: "புதிய கோரிக்கை",
+    part1: "வாடிக்கையாளர் விவரங்கள்",
+    part2: "கோரிக்கை தேர்வு",
+    success: "வெற்றி",
+    enquiry: "விசாரணை"
+  }
+};

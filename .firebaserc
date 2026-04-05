@@ -1,0 +1,17 @@
+{
+  "projects": {
+    "default": "ims-d87c6"
+  },
+  "targets": {
+    "ims-d87c6": {
+      "hosting": {
+        "production": [
+          "insurance-management-prod"
+        ],
+        "staging": [
+          "insurance-management-staging"
+        ]
+      }
+    }
+  }
+}
