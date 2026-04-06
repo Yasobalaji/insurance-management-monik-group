@@ -424,3 +424,19 @@ export interface GeneralAssetClaim {
   items: any[];
   documents: string[];
 }
+
+export interface CustomerLoan {
+  loanNumber: string;
+  customerName: string;
+  idNumber: string;
+  company: string;
+  branch: string;
+  centerName?: string;
+  loanAmount: string;
+  collectionMethod: string;
+  loanDisbursedDate?: string;
+  loanMaturityDate?: string;
+  totalPaid: string;
+  arrears: string;
+  loanStatus?: string;
+}

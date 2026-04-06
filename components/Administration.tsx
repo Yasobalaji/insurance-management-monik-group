@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { COMPANIES, COMPANY_BRANCH_MAPPING, BENEFICIARIES, CLAIM_TYPES, DEPARTMENTS, SUBSIDIARIES, ALL_REQUIRED_DOCUMENTS } from '../constants';
 import Modal from './Modal';
+import LoanDataUpload from './LoanDataUpload';
 
 interface Props {
   activeTab?: 'users' | 'roles' | 'products' | 'data';
@@ -351,22 +352,27 @@ const Administration: React.FC<Props> = ({
       )}
 
       {activeTab === 'data' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 animate-in fade-in duration-500">
-           <div className="bg-slate-900 text-white p-10 rounded-[3rem] shadow-2xl relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-8 opacity-5"><Database size={100}/></div>
-              <h4 className="text-xl font-black uppercase tracking-widest mb-2 text-emerald-400">Master Ledger Integrity</h4>
-              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-10">Total Records: {allClaims.length} Objects</p>
-              <div className="space-y-4">
-                 <button className="w-full py-4 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-between px-6 group hover:bg-white hover:text-slate-950 transition-all">
-                    <span className="font-black text-[10px] uppercase">Download Secure JSON Dump</span>
-                    <Download size={18} />
-                 </button>
-                 <button className="w-full py-4 bg-emerald-600 text-slate-950 rounded-2xl flex items-center justify-between px-6 font-black uppercase tracking-widest text-[10px] hover:bg-emerald-400">
-                    <span>Synchronize Cloud Vault</span>
-                    <RefreshCw size={18} />
-                 </button>
-              </div>
-           </div>
+        <div className="space-y-10 animate-in fade-in duration-500">
+          <div className="bg-white rounded-[2rem] shadow-sm border border-slate-200 p-10">
+            <LoanDataUpload />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+             <div className="bg-slate-900 text-white p-10 rounded-[3rem] shadow-2xl relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-8 opacity-5"><Database size={100}/></div>
+                <h4 className="text-xl font-black uppercase tracking-widest mb-2 text-emerald-400">Master Ledger Integrity</h4>
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-10">Total Records: {allClaims.length} Objects</p>
+                <div className="space-y-4">
+                   <button className="w-full py-4 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-between px-6 group hover:bg-white hover:text-slate-950 transition-all">
+                      <span className="font-black text-[10px] uppercase">Download Secure JSON Dump</span>
+                      <Download size={18} />
+                   </button>
+                   <button className="w-full py-4 bg-emerald-600 text-slate-950 rounded-2xl flex items-center justify-between px-6 font-black uppercase tracking-widest text-[10px] hover:bg-emerald-400">
+                      <span>Synchronize Cloud Vault</span>
+                      <RefreshCw size={18} />
+                   </button>
+                </div>
+             </div>
+          </div>
         </div>
       )}
     </div>

@@ -1,12 +1,13 @@
 
-import { BaseClaimData, User } from '../types';
+import { BaseClaimData, User, CustomerLoan } from '../types';
 import {
-    collection, doc, getDocs, getDoc, addDoc, setDoc,
-    updateDoc, deleteDoc, query, orderBy, serverTimestamp
+    collection, doc, getDocs, getDoc, setDoc,
+    updateDoc, deleteDoc, query, orderBy, where, serverTimestamp, writeBatch
 } from 'firebase/firestore';
 import { db } from './firebase';
 
 const COLLECTIONS = {
+    CUSTOMER_LOANS: 'customerLoans',
     CLAIMS: 'claims',
     USERS: 'users',
     BATCHES: 'batches',
@@ -104,6 +105,32 @@ export const apiService = {
 
     async deleteDocument(collectionName: string, id: string): Promise<void> {
         await deleteDoc(doc(db, collectionName, id));
+    },
+
+    async getLoanByNumber(loanNumber: string): Promise<CustomerLoan | null> {
+        const snap = await getDoc(doc(db, COLLECTIONS.CUSTOMER_LOANS, loanNumber.toUpperCase()));
+        if (snap.exists()) return snap.data() as CustomerLoan;
+        return null;
+    },
+
+    async uploadCustomerLoans(loans: CustomerLoan[]): Promise<void> {
+        const BATCH_SIZE = 400;
+        for (let i = 0; i < loans.length; i += BATCH_SIZE) {
+            const batch = writeBatch(db);
+            loans.slice(i, i + BATCH_SIZE).forEach(loan => {
+                batch.set(doc(db, COLLECTIONS.CUSTOMER_LOANS, loan.loanNumber.toUpperCase()), loan);
+            });
+            await batch.commit();
+        }
+    },
+
+    async deleteCustomerLoan(loanNumber: string): Promise<void> {
+        await deleteDoc(doc(db, COLLECTIONS.CUSTOMER_LOANS, loanNumber.toUpperCase()));
+    },
+
+    async getCustomerLoans(): Promise<CustomerLoan[]> {
+        const snap = await getDocs(collection(db, COLLECTIONS.CUSTOMER_LOANS));
+        return snap.docs.map(d => d.data() as CustomerLoan);
     },
 
     COLLECTIONS,

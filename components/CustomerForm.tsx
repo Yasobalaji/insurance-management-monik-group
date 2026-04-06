@@ -1,10 +1,10 @@
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { COMPANY_BRANCH_MAPPING, COMPANIES } from '../constants';
 import { BaseClaimData, CollectionMethod, User } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
-// Fix: Added MapPin to imports
-import { UserCheck, Clock, AlertCircle, ShieldAlert, CalendarDays, History, Fingerprint, BadgeInfo, Table, Info, Calendar, MapPin } from 'lucide-react';
+import { UserCheck, Clock, AlertCircle, CalendarDays, History, Fingerprint, BadgeInfo, Table, Calendar, MapPin, Loader2, CheckCircle2 } from 'lucide-react';
+import { apiService } from '../services/api';
 
 interface Props {
   data: Partial<BaseClaimData>;
@@ -19,6 +19,8 @@ interface Props {
 const CustomerForm: React.FC<Props> = ({ data, onChange, userBranches, userCompanies, isGlobal, currentUser, allClaims }) => {
   const { t, language } = useLanguage();
   const [now, setNow] = useState(new Date());
+  const [loanLookupStatus, setLoanLookupStatus] = useState<'idle' | 'loading' | 'found' | 'notfound'>('idle');
+  const lookupTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     const timer = setInterval(() => setNow(new Date()), 1000);
@@ -88,6 +90,34 @@ const CustomerForm: React.FC<Props> = ({ data, onChange, userBranches, userCompa
     }
   }, [data.company, allClaims]);
 
+  useEffect(() => {
+    if (lookupTimer.current) clearTimeout(lookupTimer.current);
+    const ln = data.loanNumber?.trim();
+    if (!ln || ln.length < 3) { setLoanLookupStatus('idle'); return; }
+
+    setLoanLookupStatus('loading');
+    lookupTimer.current = setTimeout(async () => {
+      const loan = await apiService.getLoanByNumber(ln);
+      if (loan) {
+        setLoanLookupStatus('found');
+        onChange('customerName', loan.customerName);
+        onChange('idNumber', loan.idNumber);
+        onChange('loanAmount', loan.loanAmount);
+        onChange('collectionMethod', loan.collectionMethod);
+        onChange('totalPaid', loan.totalPaid);
+        onChange('arrears', loan.arrears);
+        if (loan.centerName) onChange('centerName', loan.centerName);
+        if (loan.loanDisbursedDate) onChange('loanDisbursedDate', loan.loanDisbursedDate);
+        if (loan.loanMaturityDate) onChange('loanMaturityDate', loan.loanMaturityDate);
+        if (loan.loanStatus) onChange('loanStatus', loan.loanStatus);
+        if (loan.company && !data.company) onChange('company', loan.company);
+        if (loan.branch && !data.branch) onChange('branch', loan.branch);
+      } else {
+        setLoanLookupStatus('notfound');
+      }
+    }, 600);
+  }, [data.loanNumber]);
+
   return (
     <div className="bg-white rounded-[2rem] shadow-sm border border-slate-200 overflow-hidden relative">
       <div className="absolute top-0 right-0 z-10 p-6 opacity-40">
@@ -155,9 +185,26 @@ const CustomerForm: React.FC<Props> = ({ data, onChange, userBranches, userCompa
           <div className="relative">
               <label className={labelClass}>{t('loanNumber')}</label>
               <div className="relative">
-                <input type="text" className={`${inputClass} ${loanHistory.length > 0 ? 'border-blue-400' : ''}`} value={data.loanNumber || ''} onChange={(e) => onChange('loanNumber', e.target.value)} placeholder="Ex: LN-99501" />
-                {loanHistory.length > 0 && <div className="absolute right-4 top-1/2 -translate-y-1/2"><BadgeInfo className="text-blue-600" size={18} /></div>}
+                <input
+                  type="text"
+                  className={`${inputClass} pr-12 ${loanLookupStatus === 'found' ? 'border-emerald-400 bg-emerald-50/30' : loanHistory.length > 0 ? 'border-blue-400' : ''}`}
+                  value={data.loanNumber || ''}
+                  onChange={(e) => onChange('loanNumber', e.target.value)}
+                  placeholder="Ex: LN-99501"
+                />
+                <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                  {loanLookupStatus === 'loading' && <Loader2 className="text-blue-500 animate-spin" size={16} />}
+                  {loanLookupStatus === 'found' && <CheckCircle2 className="text-emerald-500" size={16} />}
+                  {loanLookupStatus === 'notfound' && loanHistory.length === 0 && <AlertCircle className="text-slate-300" size={16} />}
+                  {loanLookupStatus === 'idle' && loanHistory.length > 0 && <BadgeInfo className="text-blue-600" size={18} />}
+                </div>
               </div>
+              {loanLookupStatus === 'found' && (
+                <p className="mt-1.5 text-[9px] font-black text-emerald-600 uppercase tracking-widest animate-in fade-in">Auto-filled from loan database</p>
+              )}
+              {loanLookupStatus === 'notfound' && (data.loanNumber?.length ?? 0) >= 3 && (
+                <p className="mt-1.5 text-[9px] font-black text-slate-400 uppercase tracking-widest">No match found — enter details manually</p>
+              )}
           </div>
 
           <div>
