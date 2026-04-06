@@ -1,73 +1,110 @@
 
 import { BaseClaimData, User } from '../types';
-import { MOCK_CLAIMS } from '../utils/mockData';
+import {
+    collection, doc, getDocs, getDoc, addDoc, setDoc,
+    updateDoc, deleteDoc, query, orderBy, serverTimestamp
+} from 'firebase/firestore';
+import { db } from './firebase';
 
-const STORAGE_KEYS = {
-    CLAIMS: 'cmbsl_claims_db',
-    USERS: 'cmbsl_users_db',
-    BATCHES: 'cmbsl_batches_db'
-};
-
-// Internal helper to get/set local storage data
-const getLocal = <T>(key: string, fallback: T): T => {
-    const data = localStorage.getItem(key);
-    return data ? JSON.parse(data) : fallback;
-};
-
-const setLocal = <T>(key: string, data: T): void => {
-    localStorage.setItem(key, JSON.stringify(data));
+const COLLECTIONS = {
+    CLAIMS: 'claims',
+    USERS: 'users',
+    BATCHES: 'batches',
+    ROLES: 'roles',
+    NOTIFICATIONS: 'notifications',
+    PRODUCTS: 'products',
+    VEHICLES: 'vehicles',
+    STAFF: 'staff',
+    STAFF_CLAIMS: 'staffClaims',
+    GENERAL_ASSETS: 'generalAssets',
+    VEHICLE_CLAIMS: 'vehicleClaims',
+    GENERAL_ASSET_CLAIMS: 'generalAssetClaims',
 };
 
 export const apiService = {
     async healthCheck(): Promise<boolean> {
-        return true; // Always healthy for device storage
+        try {
+            await getDocs(collection(db, COLLECTIONS.CLAIMS));
+            return true;
+        } catch {
+            return false;
+        }
     },
 
     async getClaims(): Promise<BaseClaimData[]> {
-        return getLocal<BaseClaimData[]>(STORAGE_KEYS.CLAIMS, MOCK_CLAIMS);
+        const q = query(collection(db, COLLECTIONS.CLAIMS), orderBy('timestamp', 'desc'));
+        const snap = await getDocs(q);
+        return snap.docs.map(d => ({ id: d.id, ...d.data() } as BaseClaimData));
     },
 
     async createClaim(formData: FormData): Promise<BaseClaimData> {
-        // Since we are local, we parse the 'data' field from the FormData
         const claimDataRaw = formData.get('data');
-        if (!claimDataRaw) throw new Error("No claim data provided");
-        
+        if (!claimDataRaw) throw new Error('No claim data provided');
+
         const claimData = JSON.parse(claimDataRaw as string) as BaseClaimData;
-        const currentClaims = await this.getClaims();
-        
-        const updated = [claimData, ...currentClaims];
-        setLocal(STORAGE_KEYS.CLAIMS, updated);
+        const { id, ...rest } = claimData;
+
+        await setDoc(doc(db, COLLECTIONS.CLAIMS, id), {
+            ...rest,
+            createdAt: serverTimestamp(),
+        });
+
         return claimData;
     },
 
     async updateClaim(id: string, updates: Partial<BaseClaimData>): Promise<void> {
-        const currentClaims = await this.getClaims();
-        const updated = currentClaims.map(c => c.id === id ? { ...c, ...updates } : c);
-        setLocal(STORAGE_KEYS.CLAIMS, updated);
+        await updateDoc(doc(db, COLLECTIONS.CLAIMS, id), {
+            ...updates,
+            updatedAt: serverTimestamp(),
+        });
     },
 
-    async processBatch(batchData: { batchId: string, items: BaseClaimData[] }): Promise<void> {
-        // Record batch locally
-        const currentBatches = getLocal<any[]>(STORAGE_KEYS.BATCHES, []);
-        const newBatch = {
+    async processBatch(batchData: { batchId: string; items: BaseClaimData[] }): Promise<void> {
+        await setDoc(doc(db, COLLECTIONS.BATCHES, batchData.batchId), {
             ...batchData,
-            processedAt: new Date().toISOString(),
-        };
-        setLocal(STORAGE_KEYS.BATCHES, [...currentBatches, newBatch]);
-        
-        // Update statuses of individual claims
+            processedAt: serverTimestamp(),
+        });
+
         for (const item of batchData.items) {
             await this.updateClaim(item.id, { status: 'Cash Requested' });
         }
     },
 
+    async getUsers(): Promise<User[]> {
+        const snap = await getDocs(collection(db, COLLECTIONS.USERS));
+        return snap.docs.map(d => ({ id: d.id, ...d.data() } as User));
+    },
+
     async createUser(user: User): Promise<void> {
-        const currentUsers = getLocal<User[]>(STORAGE_KEYS.USERS, []);
-        setLocal(STORAGE_KEYS.USERS, [...currentUsers, user]);
+        const { id, ...rest } = user;
+        await setDoc(doc(db, COLLECTIONS.USERS, id), rest);
+    },
+
+    async updateUser(id: string, updates: Partial<User>): Promise<void> {
+        await updateDoc(doc(db, COLLECTIONS.USERS, id), updates as Record<string, unknown>);
     },
 
     async deleteUser(id: string): Promise<void> {
-        const currentUsers = getLocal<User[]>(STORAGE_KEYS.USERS, []);
-        setLocal(STORAGE_KEYS.USERS, currentUsers.filter(u => u.id !== id));
-    }
+        await deleteDoc(doc(db, COLLECTIONS.USERS, id));
+    },
+
+    async getCollection<T>(collectionName: string): Promise<T[]> {
+        const snap = await getDocs(collection(db, collectionName));
+        return snap.docs.map(d => ({ id: d.id, ...d.data() } as T));
+    },
+
+    async setDocument<T extends { id: string }>(collectionName: string, data: T): Promise<void> {
+        const { id, ...rest } = data;
+        await setDoc(doc(db, collectionName, id), rest as Record<string, unknown>);
+    },
+
+    async updateDocument(collectionName: string, id: string, updates: Record<string, unknown>): Promise<void> {
+        await updateDoc(doc(db, collectionName, id), updates);
+    },
+
+    async deleteDocument(collectionName: string, id: string): Promise<void> {
+        await deleteDoc(doc(db, collectionName, id));
+    },
+
+    COLLECTIONS,
 };
