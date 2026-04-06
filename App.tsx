@@ -29,7 +29,8 @@ import { User, SessionAction, BaseClaimData, BeneficiaryType, BankDetails, Produ
 import { COMPANY_BRAND, APP_NAME, COMPANY_FULL_NAMES } from './constants';
 import { Clock, UserCircle, MessageSquare, Zap, RotateCcw, ShieldCheck, Settings, Building2, CheckCircle2, ShieldAlert, Lock, Loader2, User as UserIcon, Landmark, FileText, ClipboardCheck, ArrowRight, Bell, Check, X, Shield, Package, Wallet, Layers } from 'lucide-react';
 import { apiService } from './services/api';
-import { MOCK_USERS, DEFAULT_ROLES } from './utils/mockData';
+import { DEFAULT_ROLES, MOCK_USERS } from './utils/mockData';
+import { seedFirestoreIfEmpty } from './utils/seed';
 
 const INITIAL_BANK_DETAILS: BankDetails = {
     accountHolderName: '', bankName: '', branchNameOrCode: '', accountNo: '', verifyAccountNo: ''
@@ -89,8 +90,15 @@ const App: React.FC = () => {
 
   useEffect(() => {
     const load = async () => {
-      const fetched = await apiService.getClaims();
-      setClaims(fetched);
+      await seedFirestoreIfEmpty();
+      const [fetchedClaims, fetchedUsers, fetchedRoles] = await Promise.all([
+        apiService.getClaims(),
+        apiService.getUsers(),
+        apiService.getCollection<RoleDefinition>(apiService.COLLECTIONS.ROLES),
+      ]);
+      setClaims(fetchedClaims);
+      if (fetchedUsers.length > 0) setUsers(fetchedUsers);
+      if (fetchedRoles.length > 0) setRoles(fetchedRoles);
     };
     load();
   }, []);
